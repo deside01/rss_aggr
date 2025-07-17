@@ -63,6 +63,7 @@ func main() {
 	v1.Get("/", httpReadiness)
 	v1.Get("/err", httpErr)
 	v1.Post("/users", apiCfg.handlerUser)
+	v1.Get("/users", apiCfg.handleGetUser)
 
 	r.Mount("/v1", v1)
 
