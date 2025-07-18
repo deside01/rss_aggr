@@ -10,14 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type parameters struct {
+type CreateFeedParams struct {
 	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
-func (apiCfg *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	decoder := json.NewDecoder(r.Body)
 
-	params := parameters{}
+	params := CreateFeedParams{}
 
 	err := decoder.Decode(&params)
 	if err != nil {
@@ -25,20 +26,18 @@ func (apiCfg *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	newFeed, err := apiCfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		Name:      params.Name,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
+		UserID:    user.ID,
+		Url:       params.Url,
 	})
 	if err != nil {
 		resWithErr(w, 500, fmt.Sprint("Cannot create user:", err))
 		return
 	}
 
-	resWithJSON(w, 201, dbUserToUser(newUser))
-}
-
-func (apiCfg *apiConfig) handleGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	resWithJSON(w, 200, dbUserToUser(user))
+	resWithJSON(w, 201, dbFeedToFeed(newFeed))
 }
