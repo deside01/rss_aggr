@@ -56,5 +56,6 @@ func (apiCfc *apiConfig) handleGetUserFeeds(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		resWithErr(w, 500, fmt.Sprintf("hz: %v", err))
 	}
-		resWithJSON(w, 200, dbFeedsToFeeds(feeds))
+
+	resWithJSON(w, 200, dbFeedsToFeeds(feeds))
 }

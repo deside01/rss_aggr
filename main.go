@@ -23,19 +23,20 @@ type apiConfig struct {
 func main() {
 	log.SetFlags(0)
 	godotenv.Load()
-	PORT := os.Getenv("PORT")
-	HOST := os.Getenv("HOST")
-	DB_URL := os.Getenv("DB_URL")
+	
+	PORT := strings.TrimSpace(os.Getenv("PORT"))
+	HOST := strings.TrimSpace(os.Getenv("HOST"))
+	DB_URL := strings.TrimSpace(os.Getenv("DB_URL"))
 
-	if strings.TrimSpace(PORT) == "" {
+	if PORT == "" {
 		log.Fatal("Missing PORT env")
 	}
 
-	if strings.TrimSpace(HOST) == "" {
+	if HOST == "" {
 		log.Fatal("Missing HOST env")
 	}
 
-	if strings.TrimSpace(DB_URL) == "" {
+	if DB_URL == "" {
 		log.Fatal("Missing HOST env")
 	}
 
@@ -67,6 +68,9 @@ func main() {
 	v1.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerFeed))
 	v1.Get("/user/feeds", apiCfg.middlewareAuth(apiCfg.handleGetUserFeeds))
 	v1.Get("/feeds", apiCfg.handleGetFeeds)
+	v1.Post("/feeds/follow", apiCfg.middlewareAuth(apiCfg.handlerFeedFollow))
+	v1.Get("/user/followed", apiCfg.middlewareAuth(apiCfg.handleGetUserFeedFollows))
+	v1.Delete("/user/followed/{feedID}", apiCfg.middlewareAuth(apiCfg.handleDeleteFollowedFeed))
 
 	r.Mount("/v1", v1)
 
