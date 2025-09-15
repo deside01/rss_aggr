@@ -42,3 +42,15 @@ func (apiCfg *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 func (apiCfg *apiConfig) handleGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	resWithJSON(w, 200, dbUserToUser(user))
 }
+
+func (apiCfg *apiConfig) handlerGetUserPosts(w http.ResponseWriter, r *http.Request, user database.User) {
+	posts, err := apiCfg.DB.GetPostsForUser(r.Context(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  10,
+	})
+	if err != nil {
+		resWithErr(w, 500, fmt.Sprintf("hz: %v", err))
+	}
+
+	resWithJSON(w, 200, dbPostsToPosts(posts))
+}

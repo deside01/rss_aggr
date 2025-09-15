@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -21,9 +22,9 @@ type apiConfig struct {
 }
 
 func main() {
-	log.SetFlags(0)
+	// log.SetFlags(0)
 	godotenv.Load()
-	
+
 	PORT := strings.TrimSpace(os.Getenv("PORT"))
 	HOST := strings.TrimSpace(os.Getenv("HOST"))
 	DB_URL := strings.TrimSpace(os.Getenv("DB_URL"))
@@ -45,9 +46,13 @@ func main() {
 		log.Fatal("Unable connect to DB:", err)
 	}
 
+	db := database.New(conn)
+
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
+
+	go startScraper(db, 3, time.Minute)
 
 	r := chi.NewRouter()
 
@@ -66,10 +71,12 @@ func main() {
 	v1.Post("/users", apiCfg.handlerUser)
 	v1.Get("/users", apiCfg.middlewareAuth(apiCfg.handleGetUser))
 	v1.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerFeed))
+	v1.Delete("/feeds/{feedID}", apiCfg.middlewareAuth(apiCfg.handleDeleteFeed))
 	v1.Get("/user/feeds", apiCfg.middlewareAuth(apiCfg.handleGetUserFeeds))
 	v1.Get("/feeds", apiCfg.handleGetFeeds)
 	v1.Post("/feeds/follow", apiCfg.middlewareAuth(apiCfg.handlerFeedFollow))
 	v1.Get("/user/followed", apiCfg.middlewareAuth(apiCfg.handleGetUserFeedFollows))
+	v1.Get("/user/feeds", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 	v1.Delete("/user/followed/{feedID}", apiCfg.middlewareAuth(apiCfg.handleDeleteFollowedFeed))
 
 	r.Mount("/v1", v1)

@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/deside01/rss_aggr/internal/database"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -58,4 +61,26 @@ func (apiCfc *apiConfig) handleGetUserFeeds(w http.ResponseWriter, r *http.Reque
 	}
 
 	resWithJSON(w, 200, dbFeedsToFeeds(feeds))
+}
+
+func (apiCfc *apiConfig) handleDeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
+	paramID := chi.URLParam(r, "feedID")
+
+	id, err := uuid.Parse(paramID)
+	if err != nil {
+		resWithErr(w, 400, fmt.Sprintf("hz: %v", err))
+		return
+	}
+
+	_, err = apiCfc.DB.DeleteFeed(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resWithErr(w, 404, "not found")
+			return
+		}
+		resWithErr(w, 400, fmt.Sprintf("err: %v", err))
+		return
+	}
+
+	resWithJSON(w, 204, "")
 }

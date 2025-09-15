@@ -12,3 +12,12 @@ SELECT * FROM feeds;
 
 -- name: GetUserFeeds :many
 SELECT * FROM feeds WHERE user_id = $1;
+
+-- name: GetNextFeeds :many
+SELECT * FROM feeds
+ORDER BY created_at ASC
+LIMIT $1;
+
+-- name: DeleteFeed :one
+DELETE FROM feeds WHERE id = $1
+RETURNING id;
