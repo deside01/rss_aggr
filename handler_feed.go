@@ -49,6 +49,7 @@ func (apiCfc *apiConfig) handleGetFeeds(w http.ResponseWriter, r *http.Request) 
 	feeds, err := apiCfc.DB.GetFeeds(r.Context())
 	if err != nil {
 		resWithErr(w, 500, fmt.Sprintf("hz: %v", err))
+		return
 	}
 
 	resWithJSON(w, 200, dbFeedsToFeeds(feeds))
@@ -58,6 +59,7 @@ func (apiCfc *apiConfig) handleGetUserFeeds(w http.ResponseWriter, r *http.Reque
 	feeds, err := apiCfc.DB.GetUserFeeds(r.Context(), user.ID)
 	if err != nil {
 		resWithErr(w, 500, fmt.Sprintf("hz: %v", err))
+		return
 	}
 
 	resWithJSON(w, 200, dbFeedsToFeeds(feeds))
